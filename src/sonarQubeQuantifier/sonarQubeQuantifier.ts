@@ -9,7 +9,7 @@ const axios = require("axios");
 const propertiesReader = require("properties-reader");
 import {LocalityMap, Quantifier} from "bugfinder-framework";
 import {CommitPath, PathsHandling} from "bugfinder-localityrecorder-commitpath";
-import {BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES} from "./TYPES";
+import {BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES} from "../TYPES";
 import {Git, GitFileType, Commit} from "bugfinder-localityrecorder-commit"
 import {SonarQubeMeasurement} from "./sonarQubeMeasurement";
 import moment from "moment";
