@@ -131,41 +131,10 @@ export class SonarQubeMeasurement {
      * }
      */
     private getMeasure(metric: string, measures: any[]): any {
-
-
-
-
-
-
-
-
-
-
-
-        // TODO: sonderfall: falls keine measure gefunden wurde ist das null, null[0] ist ungünstig
-
-
-
-
-        return measures.filter(measure => {
+        const measuresFromWebserver = measures.filter(measure => {
             return measure.metric === metric
-        })[0]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        })
+        return measuresFromWebserver == null ? null : measuresFromWebserver[0]
     }
 
     /**
@@ -175,9 +144,13 @@ export class SonarQubeMeasurement {
      * @param measures
      * @private
      */
-    private parseByRefNumber(metric: string, measureContainer: Measure<number>, measures: any[]){
+    private parseByRefNumber(metric: string, measureContainer: Measure<number>, measures: any[]) {
         const measure = this.getMeasure(metric, measures)
-        measureContainer.set(metric, parseFloat(measure.value), measure.bestValue)
+        if (measure != null) {
+            measureContainer.set(metric, parseFloat(measure.value), measure.bestValue)
+        } else {
+            measureContainer.set(metric, undefined, undefined)
+        }
     }
 
 }
@@ -187,7 +160,7 @@ export class Measure<T> {
     public value: T
     public bestValue?: boolean
 
-    set(name: string, value: T, bestValue?: boolean){
+    set(name: string, value: T, bestValue?: boolean) {
         this.name = name
         this.value = value
         this.bestValue = bestValue

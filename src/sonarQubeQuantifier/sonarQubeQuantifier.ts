@@ -94,10 +94,10 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
                 continue;
             }
 
-            commit.localities.forEach((locality, i) => {
+            commit.localities.forEach((locality, x) => {
                 let parsedMeasurement = undefined;
-                if (measurements[i] != null) {
-                    parsedMeasurement = new SonarQubeMeasurement(measurements[i])
+                if (measurements[x] != null) {
+                    parsedMeasurement = new SonarQubeMeasurement(measurements[x])
                 }
                 quantifications.set(locality, parsedMeasurement);
             })
@@ -141,8 +141,8 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             try {
                 // retry
                 await this.git.checkout(hash, true);
-            } catch (err) {
-                throw new Error(`SonarQubeQuantifier: git checkout retry failed with msg: ${err}.` +
+            } catch (err2) {
+                throw new Error(`SonarQubeQuantifier: git checkout retry failed with msg: ${err2}.` +
                     ` Aborting quantification for commit ${hash}`);
             }
         }
@@ -156,7 +156,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             console.log(command)
             console.log("\n\n")
             console.log("\tScanning might take a few minutes: Command: ", command);
-            const stdout    = execSync(command).toString();
+            execSync(command).toString();
             console.log("\tFinished scan");
             //@formatter:on
         };
@@ -270,7 +270,6 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
 
         // pathsHandling: filter commitPath which do not comply the pathIncludes pattern
         const filterPathIncludes: (CommitPath) => boolean = (commitPath: CommitPath) => {
-            //if (commitPath.path) return this.pathsHandling.pathIncludes.test(commitPath.path.path);
             if (commitPath.path) return this.pathsHandling.pathIncludes.test(commitPath.path.path);
             return true;
         }
@@ -313,7 +312,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
 
         });
         console.log("localities after injecting pathInjections: ", localities.length)
-        console.log(`CommitPathType got ${localities.length} localities from ${commits.length} commits.`)
+        console.log(`PathHandling got ${localities.length} localities from ${commits.length} commits.`)
         return localities;
     }
 
