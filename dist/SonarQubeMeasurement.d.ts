@@ -19,7 +19,7 @@ export declare class SonarQubeMeasurement {
     classes: Measure<number>;
     securityReviewRating: Measure<number>;
     functions: Measure<number>;
-    squaleIndex: Measure<number>;
+    sqaleIndex: Measure<number>;
     bugs: Measure<number>;
     infoViolations: Measure<number>;
     coverage: Measure<number>;

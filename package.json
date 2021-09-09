@@ -14,11 +14,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/penguinsAreFunny/bugFinder-framework"
+    "url": "git+https://github.com/penguinsAreFunny/bugFinder-commitPath-quantifier-sonarqube"
   },
-  "homepage": "https://github.com/penguinsAreFunny/bugFinder-framework#readme",
+  "homepage": "https://github.com/penguinsAreFunny/bugFinder-commitPath-quantifier-sonarqube#readme",
   "bugs": {
-    "url": "https://github.com/penguinsAreFunny/bugFinder-framework/issues"
+    "url": "https://github.com/penguinsAreFunny/bugFinder-commitPath-quantifier-sonarqube/issues"
   },
   "files": [
     "dist/**/*"

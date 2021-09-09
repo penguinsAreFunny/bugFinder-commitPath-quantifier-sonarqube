@@ -11,7 +11,7 @@ import {LocalityMap, Quantifier} from "bugfinder-framework";
 import {CommitPath, PathsHandling} from "bugfinder-localityrecorder-commitpath";
 import {BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES} from "./TYPES";
 import {Git, GitFileType, Commit} from "bugfinder-localityrecorder-commit"
-import {SonarQubeMeasurement} from "./SonarQubeMeasurement";
+import {SonarQubeMeasurement} from "./sonarQubeMeasurement";
 import moment from "moment";
 
 @injectable()
