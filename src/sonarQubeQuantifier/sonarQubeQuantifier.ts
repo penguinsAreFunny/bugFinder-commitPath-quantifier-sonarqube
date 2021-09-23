@@ -1,4 +1,4 @@
-import {inject, injectable, optional} from "inversify";
+import {inject, injectable} from "inversify";
 import {execSync} from "child_process";
 import {AxiosRequestConfig} from "axios";
 import {SONARQUBE_METRICS} from "./sonarQubeMetrics";
@@ -8,7 +8,7 @@ const axios = require("axios");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const propertiesReader = require("properties-reader");
 import {LocalityMap, Quantifier} from "bugfinder-framework";
-import {CommitPath, PathsHandling} from "bugfinder-localityrecorder-commitpath";
+import {CommitPath} from "bugfinder-localityrecorder-commitpath";
 import {BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES} from "../TYPES";
 import {Git, GitFileType, Commit} from "bugfinder-localityrecorder-commit"
 import {SonarQubeMeasurement} from "./sonarQubeMeasurement";
@@ -23,9 +23,6 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
     @inject(BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES.git)
     git: Git;
 
-    @optional() @inject(BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES.pathsHandling)
-    pathsHandling: PathsHandling;
-
     async quantify(localities: CommitPath[]): Promise<LocalityMap<CommitPath, SonarQubeMeasurement>> {
         /**
          * merge all CommitPaths which are in the same commit
@@ -34,15 +31,13 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
          * for each commit
          */
         console.log("SonarQubeQuantifier starting...")
-        const locs: CommitPath[] = this.applyPathHandling(localities);
-
         const hashes = new Map<string, number>();
         let commits: { hash: string, localities: CommitPath[], paths: string[] }[] = []
-        for (const locality of locs) {
+        for (const locality of localities) {
             if (hashes.get(locality.commit.hash) === 1) continue;
             hashes.set(locality.commit.hash, 1);
 
-            const commitPaths = locs.filter(loc => {
+            const commitPaths = localities.filter(loc => {
                 return loc.commit.hash === locality.commit.hash
             })
 
@@ -59,7 +54,8 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
 
         const quantifications = new LocalityMap<CommitPath, SonarQubeMeasurement>();
 
-        console.log("Total commits left: ", commits.length)
+        // TODO: Total commits und Total commits with paths to quantify sollte inzwischen identisch sein!
+        console.log("Total commits: ", commits.length)
         const commitsLeft = commits.filter(commit => {
             return commit.paths.length > 0 && commit.paths[0] != undefined
         })
@@ -75,7 +71,6 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
                     "to inject on empty paths see pathsHandling-injections")
                 continue
             }
-
 
             const beforePreHooks = moment();
             this.runPreHooks();
@@ -262,58 +257,6 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         console.log("\tRetrieving time: ", afterRetrieving.diff(beforeRetrieving, "seconds"));
 
         return measurements;
-    }
-
-    public applyPathHandling(localities: CommitPath[]): CommitPath[] {
-        console.log(`Applying path handling for ${localities.length} localities.`)
-        let commits: Commit[] = CommitPath.getCommits(localities);
-
-        // pathsHandling: filter commitPath which do not comply the pathIncludes pattern
-        const filterPathIncludes: (CommitPath) => boolean = (commitPath: CommitPath) => {
-            if (commitPath.path) return this.pathsHandling.pathIncludes.test(commitPath.path.path);
-            return true;
-        }
-
-        if (this.pathsHandling && this.pathsHandling.pathIncludes) {
-            localities = localities.filter(filterPathIncludes);
-            console.log("localities after filtering pathIncludes: ", localities.length)
-        }
-
-        // remove paths which are deleted
-        const removeDeletedPaths: (CommitPath) => boolean = (commitPath: CommitPath) => {
-            if (commitPath.path) return commitPath.path.type !== GitFileType.deleted;
-            return true;
-        }
-        localities = localities.filter(removeDeletedPaths);
-        console.log("localities after removing deleted paths: ", localities.length)
-
-        const localityMap = new Map<string, CommitPath>();
-        localities.forEach(l => {
-            localityMap.set(l.commit.hash, l);
-        })
-
-        // inject paths for each unique commit
-        commits.forEach(commit => {
-            const commitPath = localityMap.get(commit.hash);
-            if (commitPath == null || (commitPath.path == null && !this.pathsHandling?.injectOnEmptyPaths)) {
-                // do not inject on empty paths
-                return
-            }
-            this.pathsHandling?.injections?.forEach(injection => {
-                const injectedCommitPath = new CommitPath();
-                injectedCommitPath.commit = commit;
-                injectedCommitPath.path = {
-                    path: injection,
-                    type: GitFileType.other
-                };
-                localities.push(injectedCommitPath);
-                localityMap.set(commit.hash, injectedCommitPath)
-            })
-
-        });
-        console.log("localities after injecting pathInjections: ", localities.length)
-        console.log(`PathHandling got ${localities.length} localities from ${commits.length} commits.`)
-        return localities;
     }
 
 }
