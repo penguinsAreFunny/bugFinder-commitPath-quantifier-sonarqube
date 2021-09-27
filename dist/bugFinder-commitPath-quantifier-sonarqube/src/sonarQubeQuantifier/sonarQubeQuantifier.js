@@ -71,12 +71,13 @@ var bugfinder_framework_1 = require("bugfinder-framework");
 var TYPES_1 = require("../TYPES");
 var sonarQubeMeasurement_1 = require("./sonarQubeMeasurement");
 var moment_1 = __importDefault(require("moment"));
+var src_1 = require("../../../bugFinder-commitPath-localityPreprocessor-commitSubset/src");
 var SonarQubeQuantifier = /** @class */ (function () {
     function SonarQubeQuantifier() {
     }
     SonarQubeQuantifier.prototype.quantify = function (localities) {
         return __awaiter(this, void 0, void 0, function () {
-            var hashes, commits, _loop_1, localities_1, localities_1_1, locality, quantifications, commitsLeft, commitsLength, _loop_2, this_1, i;
+            var hashes, commits, _loop_1, localities_1, localities_1_1, locality, quantifications, _loop_2, this_1, i;
             var e_1, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
@@ -87,7 +88,7 @@ var SonarQubeQuantifier = /** @class */ (function () {
                          * git checkout and SonarQube-quantification is costly therefore only run this process once
                          * for each commit
                          */
-                        console.log("SonarQubeQuantifier starting...");
+                        this.logger.info("SonarQubeQuantifier starting...");
                         hashes = new Map();
                         commits = [];
                         _loop_1 = function (locality) {
@@ -121,22 +122,16 @@ var SonarQubeQuantifier = /** @class */ (function () {
                             finally { if (e_1) throw e_1.error; }
                         }
                         quantifications = new bugfinder_framework_1.LocalityMap();
-                        // TODO: Total commits und Total commits with paths to quantify sollte inzwischen identisch sein!
-                        console.log("Total commits: ", commits.length);
-                        commitsLeft = commits.filter(function (commit) {
-                            return commit.paths.length > 0 && commit.paths[0] != undefined;
-                        });
-                        commitsLength = commitsLeft.length;
-                        console.log("Total commits with paths to quantify: ", commitsLength);
+                        this.logger.info("Total commits: ", commits.length);
                         _loop_2 = function (i) {
                             var commit, beforePreHooks, afterPreHooks, beforeCheckout, afterCheckout, beforeSonarQube, measurements, afterSonarQube, preHooksTime, checkoutTime, sonarQubeTime, totalTime, estimatedTimeS, estimatedTimeM, estimatedTimeH, estimatedTimeD;
                             return __generator(this, function (_c) {
                                 switch (_c.label) {
                                     case 0:
                                         commit = commits[i];
-                                        console.log("Quantifying commit " + (i + 1) + " of " + commits.length + ". Hash: " + commit.hash);
+                                        this_1.logger.info("Quantifying commit " + (i + 1) + " of " + commits.length + ". Hash: " + commit.hash);
                                         if (commit.paths.length == 0 || commit.paths[0] == undefined) {
-                                            console.log("ignoring commit as no paths are left to quantify for this commit. If you like", "to inject on empty paths see pathsHandling-injections");
+                                            this_1.logger.info("ignoring commit as no paths are left to quantify for this commit. If you like", "to inject on empty paths see pathsHandling-injections");
                                             return [2 /*return*/, "continue"];
                                         }
                                         beforePreHooks = (0, moment_1.default)();
@@ -148,12 +143,12 @@ var SonarQubeQuantifier = /** @class */ (function () {
                                         _c.sent();
                                         afterCheckout = (0, moment_1.default)();
                                         beforeSonarQube = (0, moment_1.default)();
-                                        return [4 /*yield*/, this_1.sonarQubeQuantify(commit.paths)];
+                                        return [4 /*yield*/, this_1.sonarQubeQuantify(commit.paths, commit.hash)];
                                     case 2:
                                         measurements = _c.sent();
                                         afterSonarQube = (0, moment_1.default)();
                                         if (measurements.length != commit.localities.length) {
-                                            console.error("ERROR: SonarQubeQuantifier failed for commit " + commit.hash + ".");
+                                            this_1.logger.error("ERROR: SonarQubeQuantifier failed for commit " + commit.hash + ".");
                                             return [2 /*return*/, "continue"];
                                         }
                                         commit.localities.forEach(function (locality, x) {
@@ -167,16 +162,16 @@ var SonarQubeQuantifier = /** @class */ (function () {
                                         checkoutTime = afterCheckout.diff(beforeCheckout, "seconds");
                                         sonarQubeTime = afterSonarQube.diff(beforeSonarQube, "seconds");
                                         totalTime = preHooksTime + checkoutTime + sonarQubeTime;
-                                        estimatedTimeS = totalTime * (commitsLength - i);
+                                        estimatedTimeS = totalTime * (commits.length - i);
                                         estimatedTimeM = Math.round((estimatedTimeS / 60) * 100) / 100;
                                         estimatedTimeH = Math.round((estimatedTimeS / (60 * 60)) * 100) / 100;
                                         estimatedTimeD = Math.round((estimatedTimeS / (60 * 60 * 24)) * 100) / 100;
-                                        console.log("\tPrehooks time:\t", preHooksTime);
-                                        console.log("\tCheckout time:\t", checkoutTime);
-                                        console.log("\tSonarQube time:\t", sonarQubeTime);
-                                        console.log("\tTotal time:\t", totalTime);
-                                        console.log("\tEstimated time for next ", commitsLength - i, " commits: with ", totalTime, "s time per commit: ", estimatedTimeS, "s = ", estimatedTimeM, "m = ", estimatedTimeH, "h  = ", estimatedTimeD, "d");
-                                        console.log("\n\n\n");
+                                        this_1.logger.info("\tPrehooks time:\t", preHooksTime);
+                                        this_1.logger.info("\tCheckout time:\t", checkoutTime);
+                                        this_1.logger.info("\tSonarQube time:\t", sonarQubeTime);
+                                        this_1.logger.info("\tTotal time:\t", totalTime);
+                                        this_1.logger.info("\tEstimated time for next ", commits.length - i, " commits: with ", totalTime, "s time per commit: ", estimatedTimeS, "s = ", estimatedTimeM, "m = ", estimatedTimeH, "h  = ", estimatedTimeD, "d");
+                                        this_1.logger.info("\n\n\n");
                                         return [2 /*return*/];
                                 }
                             });
@@ -185,7 +180,7 @@ var SonarQubeQuantifier = /** @class */ (function () {
                         i = 0;
                         _b.label = 1;
                     case 1:
-                        if (!(i < commitsLength)) return [3 /*break*/, 4];
+                        if (!(i < commits.length)) return [3 /*break*/, 4];
                         return [5 /*yield**/, _loop_2(i)];
                     case 2:
                         _b.sent();
@@ -207,7 +202,7 @@ var SonarQubeQuantifier = /** @class */ (function () {
     };
     SonarQubeQuantifier.prototype.checkoutCommit = function (hash) {
         return __awaiter(this, void 0, void 0, function () {
-            var err_1, err2_1;
+            var err_1, err2_1, msg;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -229,15 +224,17 @@ var SonarQubeQuantifier = /** @class */ (function () {
                         return [3 /*break*/, 6];
                     case 5:
                         err2_1 = _a.sent();
-                        throw new Error("SonarQubeQuantifier: git checkout retry failed with msg: " + err2_1 + "." +
-                            (" Aborting quantification for commit " + hash));
+                        msg = "SonarQubeQuantifier: git checkout retry failed with msg: " + err2_1 + "." +
+                            (" Aborting quantification for commit " + hash);
+                        this.logger.error(msg);
+                        throw new Error(msg);
                     case 6: return [3 /*break*/, 7];
                     case 7: return [2 /*return*/];
                 }
             });
         });
     };
-    SonarQubeQuantifier.prototype.sonarQubeQuantify = function (paths) {
+    SonarQubeQuantifier.prototype.sonarQubeQuantify = function (paths, commitHash) {
         return __awaiter(this, void 0, void 0, function () {
             var runSonarScanner, webServerIsUpdated, retrieveMeasurements, waitUntilWebserverIsUpdated, timeBeforeScanning, beforeScanning, afterScanning, error_1, beforeRetrieving, measurements, paths_1, paths_1_1, path, measurement, error_2, e_2_1, afterRetrieving;
             var e_2, _a;
@@ -249,11 +246,11 @@ var SonarQubeQuantifier = /** @class */ (function () {
                             // @formatter:off
                             var args = "-Dproject.settings=" + _this.sonarQubeConfig.propertiesPath;
                             var command = "sonar-scanner.bat " + args;
-                            console.log(command);
-                            console.log("\n\n");
-                            console.log("\tScanning might take a few minutes: Command: ", command);
+                            _this.logger.info(command);
+                            _this.logger.info("\n\n");
+                            _this.logger.info("\tScanning might take a few minutes: Command: ", command);
                             (0, child_process_1.execSync)(command).toString();
-                            console.log("\tFinished scan");
+                            _this.logger.info("\tFinished scan");
                             //@formatter:on
                         };
                         webServerIsUpdated = function (time) { return __awaiter(_this, void 0, void 0, function () {
@@ -286,7 +283,7 @@ var SonarQubeQuantifier = /** @class */ (function () {
                                         return [2 /*return*/, newestTask.status == "SUCCESS" && newestTaskTime >= time];
                                     case 3:
                                         error_3 = _b.sent();
-                                        console.log("\tHttp GET to SonarQube-WebApi with path: \"api/ce/activity\" failed with error: \n                    " + error_3.statusCode + ". Error message: " + error_3.message);
+                                        this.logger.warn("\tHttp GET to SonarQube-WebApi with path: \"api/ce/activity\" failed with error: \n                    " + error_3.statusCode + ". Error message: " + error_3.message + ". CommitHash: " + commitHash);
                                         return [3 /*break*/, 4];
                                     case 4: return [2 /*return*/];
                                 }
@@ -321,7 +318,7 @@ var SonarQubeQuantifier = /** @class */ (function () {
                                         return [4 /*yield*/, axios(config)];
                                     case 2:
                                         response = _a.sent();
-                                        console.log("\tSuccessfully retrieved measurements for path: " + webPath);
+                                        this.logger.info("\tSuccessfully retrieved measurements for path: " + webPath);
                                         return [2 /*return*/, response.data];
                                     case 3:
                                         error_4 = _a.sent();
@@ -342,7 +339,7 @@ var SonarQubeQuantifier = /** @class */ (function () {
                                         now = Date.now().valueOf();
                                         minutesWaiting = (now - timeBeforeScanning.valueOf()) / (1000 * 60);
                                         if (minutesWaiting > 15)
-                                            throw new Error("Timeout: SonarQube-Webserver has not updated for 15 minutes");
+                                            throw new Error("Timeout: SonarQube-Webserver has not updated for 15 minutes. Commit " + commitHash);
                                         // sleep 1000ms
                                         return [4 /*yield*/, new Promise(function (resolve) { return setTimeout(resolve, 1000); })];
                                     case 2:
@@ -366,7 +363,7 @@ var SonarQubeQuantifier = /** @class */ (function () {
                         return [3 /*break*/, 4];
                     case 3:
                         error_1 = _b.sent();
-                        console.log(error_1);
+                        this.logger.error(error_1);
                         return [2 /*return*/, null];
                     case 4:
                         beforeRetrieving = (0, moment_1.default)();
@@ -389,7 +386,7 @@ var SonarQubeQuantifier = /** @class */ (function () {
                         return [3 /*break*/, 10];
                     case 9:
                         error_2 = _b.sent();
-                        console.log("Error: Retrieving of measurements for path: ", path, "\nMessage: ", error_2.message);
+                        this.logger.error("Error: Retrieving of measurements for commit: ", commitHash, " for path: ", path, "\n\tMessage: ", error_2.message);
                         return [3 /*break*/, 10];
                     case 10:
                         paths_1_1 = paths_1.next();
@@ -407,13 +404,18 @@ var SonarQubeQuantifier = /** @class */ (function () {
                         return [7 /*endfinally*/];
                     case 14:
                         afterRetrieving = (0, moment_1.default)();
-                        console.log("\tScanning time: ", afterScanning.diff(beforeScanning, "seconds"));
-                        console.log("\tRetrieving time: ", afterRetrieving.diff(beforeRetrieving, "seconds"));
+                        this.logger.info("\tScanning time: ", afterScanning.diff(beforeScanning, "seconds"));
+                        this.logger.info("\tRetrieving time: ", afterRetrieving.diff(beforeRetrieving, "seconds"));
                         return [2 /*return*/, measurements];
                 }
             });
         });
     };
+    __decorate([
+        (0, inversify_1.optional)(),
+        (0, inversify_1.inject)(src_1.BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.logger),
+        __metadata("design:type", Object)
+    ], SonarQubeQuantifier.prototype, "logger", void 0);
     __decorate([
         (0, inversify_1.inject)(TYPES_1.BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES.sonarQubeConfig),
         __metadata("design:type", Object)
@@ -428,4 +430,4 @@ var SonarQubeQuantifier = /** @class */ (function () {
     return SonarQubeQuantifier;
 }());
 exports.SonarQubeQuantifier = SonarQubeQuantifier;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic29uYXJRdWJlUXVhbnRpZmllci5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uL3NyYy9zb25hclF1YmVRdWFudGlmaWVyL3NvbmFyUXViZVF1YW50aWZpZXIudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSx1Q0FBNkM7QUFDN0MsK0NBQXVDO0FBRXZDLHVEQUFxRDtBQUVyRCw4REFBOEQ7QUFDOUQsSUFBTSxLQUFLLEdBQUcsT0FBTyxDQUFDLE9BQU8sQ0FBQyxDQUFDO0FBQy9CLDhEQUE4RDtBQUM5RCxJQUFNLGdCQUFnQixHQUFHLE9BQU8sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDO0FBQ3RELDJEQUE0RDtBQUU1RCxrQ0FBeUU7QUFFekUsK0RBQTREO0FBQzVELGtEQUE0QjtBQUc1QjtJQUFBO0lBb1BBLENBQUM7SUE1T1Msc0NBQVEsR0FBZCxVQUFlLFVBQXdCOzs7Ozs7O3dCQUNuQzs7Ozs7MkJBS0c7d0JBQ0gsT0FBTyxDQUFDLEdBQUcsQ0FBQyxpQ0FBaUMsQ0FBQyxDQUFBO3dCQUN4QyxNQUFNLEdBQUcsSUFBSSxHQUFHLEVBQWtCLENBQUM7d0JBQ3JDLE9BQU8sR0FBa0UsRUFBRSxDQUFBOzRDQUNwRSxRQUFROzRCQUNmLElBQUksTUFBTSxDQUFDLEdBQUcsQ0FBQyxRQUFRLENBQUMsTUFBTSxDQUFDLElBQUksQ0FBQyxLQUFLLENBQUM7a0RBQVc7NEJBQ3JELE1BQU0sQ0FBQyxHQUFHLENBQUMsUUFBUSxDQUFDLE1BQU0sQ0FBQyxJQUFJLEVBQUUsQ0FBQyxDQUFDLENBQUM7NEJBRXBDLElBQU0sV0FBVyxHQUFHLFVBQVUsQ0FBQyxNQUFNLENBQUMsVUFBQSxHQUFHO2dDQUNyQyxPQUFPLEdBQUcsQ0FBQyxNQUFNLENBQUMsSUFBSSxLQUFLLFFBQVEsQ0FBQyxNQUFNLENBQUMsSUFBSSxDQUFBOzRCQUNuRCxDQUFDLENBQUMsQ0FBQTs0QkFFRixJQUFNLEtBQUssR0FBRyxXQUFXLENBQUMsR0FBRyxDQUFDLFVBQUEsVUFBVTs7Z0NBQ3BDLE9BQU8sTUFBQSxVQUFVLENBQUMsSUFBSSwwQ0FBRSxJQUFJLENBQUE7NEJBQ2hDLENBQUMsQ0FBQyxDQUFBOzRCQUVGLE9BQU8sQ0FBQyxJQUFJLENBQUM7Z0NBQ1QsSUFBSSxFQUFFLFFBQVEsQ0FBQyxNQUFNLENBQUMsSUFBSTtnQ0FDMUIsVUFBVSxFQUFFLFdBQVc7Z0NBQ3ZCLEtBQUssRUFBRSxLQUFLOzZCQUNmLENBQUMsQ0FBQzs7OzRCQWhCUCxLQUF1QixlQUFBLFNBQUEsVUFBVSxDQUFBO2dDQUF0QixRQUFRO3dDQUFSLFFBQVE7NkJBaUJsQjs7Ozs7Ozs7O3dCQUVLLGVBQWUsR0FBRyxJQUFJLGlDQUFXLEVBQW9DLENBQUM7d0JBRTVFLGlHQUFpRzt3QkFDakcsT0FBTyxDQUFDLEdBQUcsQ0FBQyxpQkFBaUIsRUFBRSxPQUFPLENBQUMsTUFBTSxDQUFDLENBQUE7d0JBQ3hDLFdBQVcsR0FBRyxPQUFPLENBQUMsTUFBTSxDQUFDLFVBQUEsTUFBTTs0QkFDckMsT0FBTyxNQUFNLENBQUMsS0FBSyxDQUFDLE1BQU0sR0FBRyxDQUFDLElBQUksTUFBTSxDQUFDLEtBQUssQ0FBQyxDQUFDLENBQUMsSUFBSSxTQUFTLENBQUE7d0JBQ2xFLENBQUMsQ0FBQyxDQUFBO3dCQUNJLGFBQWEsR0FBRyxXQUFXLENBQUMsTUFBTSxDQUFBO3dCQUN4QyxPQUFPLENBQUMsR0FBRyxDQUFDLHdDQUF3QyxFQUFFLGFBQWEsQ0FBQyxDQUFBOzRDQUUzRCxDQUFDOzs7Ozt3Q0FDQSxNQUFNLEdBQUcsT0FBTyxDQUFDLENBQUMsQ0FBQyxDQUFDO3dDQUMxQixPQUFPLENBQUMsR0FBRyxDQUFDLHlCQUFzQixDQUFDLEdBQUcsQ0FBQyxhQUFPLE9BQU8sQ0FBQyxNQUFNLGdCQUFXLE1BQU0sQ0FBQyxJQUFNLENBQUMsQ0FBQzt3Q0FFdEYsSUFBSSxNQUFNLENBQUMsS0FBSyxDQUFDLE1BQU0sSUFBSSxDQUFDLElBQUksTUFBTSxDQUFDLEtBQUssQ0FBQyxDQUFDLENBQUMsSUFBSSxTQUFTLEVBQUU7NENBQzFELE9BQU8sQ0FBQyxHQUFHLENBQUMsK0VBQStFLEVBQ3ZGLHVEQUF1RCxDQUFDLENBQUE7O3lDQUUvRDt3Q0FFSyxjQUFjLEdBQUcsSUFBQSxnQkFBTSxHQUFFLENBQUM7d0NBQ2hDLE9BQUssV0FBVyxFQUFFLENBQUM7d0NBQ2IsYUFBYSxHQUFHLElBQUEsZ0JBQU0sR0FBRSxDQUFDO3dDQUV6QixjQUFjLEdBQUcsSUFBQSxnQkFBTSxHQUFFLENBQUM7d0NBQ2hDLHFCQUFNLE9BQUssY0FBYyxDQUFDLE1BQU0sQ0FBQyxJQUFJLENBQUMsRUFBQTs7d0NBQXRDLFNBQXNDLENBQUM7d0NBQ2pDLGFBQWEsR0FBRyxJQUFBLGdCQUFNLEdBQUUsQ0FBQzt3Q0FFekIsZUFBZSxHQUFHLElBQUEsZ0JBQU0sR0FBRSxDQUFDO3dDQUNaLHFCQUFNLE9BQUssaUJBQWlCLENBQUMsTUFBTSxDQUFDLEtBQUssQ0FBQyxFQUFBOzt3Q0FBekQsWUFBWSxHQUFHLFNBQTBDO3dDQUN6RCxjQUFjLEdBQUcsSUFBQSxnQkFBTSxHQUFFLENBQUM7d0NBRWhDLElBQUksWUFBWSxDQUFDLE1BQU0sSUFBSSxNQUFNLENBQUMsVUFBVSxDQUFDLE1BQU0sRUFBRTs0Q0FDakQsT0FBTyxDQUFDLEtBQUssQ0FBQyxrREFBZ0QsTUFBTSxDQUFDLElBQUksTUFBRyxDQUFDLENBQUM7O3lDQUVqRjt3Q0FFRCxNQUFNLENBQUMsVUFBVSxDQUFDLE9BQU8sQ0FBQyxVQUFDLFFBQVEsRUFBRSxDQUFDOzRDQUNsQyxJQUFJLGlCQUFpQixHQUFHLFNBQVMsQ0FBQzs0Q0FDbEMsSUFBSSxZQUFZLENBQUMsQ0FBQyxDQUFDLElBQUksSUFBSSxFQUFFO2dEQUN6QixpQkFBaUIsR0FBRyxJQUFJLDJDQUFvQixDQUFDLFlBQVksQ0FBQyxDQUFDLENBQUMsQ0FBQyxDQUFBOzZDQUNoRTs0Q0FDRCxlQUFlLENBQUMsR0FBRyxDQUFDLFFBQVEsRUFBRSxpQkFBaUIsQ0FBQyxDQUFDO3dDQUNyRCxDQUFDLENBQUMsQ0FBQTt3Q0FHSSxZQUFZLEdBQUksYUFBYSxDQUFDLElBQUksQ0FBQyxjQUFjLEVBQUUsU0FBUyxDQUFDLENBQUE7d0NBQzdELFlBQVksR0FBSSxhQUFhLENBQUMsSUFBSSxDQUFDLGNBQWMsRUFBRSxTQUFTLENBQUMsQ0FBQTt3Q0FDN0QsYUFBYSxHQUFHLGNBQWMsQ0FBQyxJQUFJLENBQUMsZUFBZSxFQUFFLFNBQVMsQ0FBQyxDQUFBO3dDQUMvRCxTQUFTLEdBQU8sWUFBWSxHQUFHLFlBQVksR0FBRyxhQUFhLENBQUE7d0NBQzNELGNBQWMsR0FBRyxTQUFTLEdBQUcsQ0FBQyxhQUFhLEdBQUMsQ0FBQyxDQUFDLENBQUM7d0NBQy9DLGNBQWMsR0FBRyxJQUFJLENBQUMsS0FBSyxDQUFDLENBQUMsY0FBYyxHQUFDLEVBQUUsQ0FBQyxHQUFDLEdBQUcsQ0FBQyxHQUFDLEdBQUcsQ0FBQzt3Q0FDekQsY0FBYyxHQUFHLElBQUksQ0FBQyxLQUFLLENBQUMsQ0FBQyxjQUFjLEdBQUMsQ0FBQyxFQUFFLEdBQUMsRUFBRSxDQUFDLENBQUMsR0FBQyxHQUFHLENBQUMsR0FBQyxHQUFHLENBQUM7d0NBQzlELGNBQWMsR0FBRyxJQUFJLENBQUMsS0FBSyxDQUFDLENBQUMsY0FBYyxHQUFDLENBQUMsRUFBRSxHQUFDLEVBQUUsR0FBQyxFQUFFLENBQUMsQ0FBQyxHQUFDLEdBQUcsQ0FBQyxHQUFDLEdBQUcsQ0FBQzt3Q0FDdkUsT0FBTyxDQUFDLEdBQUcsQ0FBQyxvQkFBb0IsRUFBSyxZQUFZLENBQUMsQ0FBQzt3Q0FDbkQsT0FBTyxDQUFDLEdBQUcsQ0FBQyxvQkFBb0IsRUFBSyxZQUFZLENBQUMsQ0FBQzt3Q0FDbkQsT0FBTyxDQUFDLEdBQUcsQ0FBQyxxQkFBcUIsRUFBSSxhQUFhLENBQUMsQ0FBQzt3Q0FDcEQsT0FBTyxDQUFDLEdBQUcsQ0FBQyxpQkFBaUIsRUFBUSxTQUFTLENBQUMsQ0FBQzt3Q0FDaEQsT0FBTyxDQUFDLEdBQUcsQ0FBQyw0QkFBNEIsRUFBRSxhQUFhLEdBQUMsQ0FBQyxFQUFFLGlCQUFpQixFQUFFLFNBQVMsRUFDbkYscUJBQXFCLEVBQUUsY0FBYyxFQUFHLE1BQU0sRUFBRSxjQUFjLEVBQUUsTUFBTSxFQUFFLGNBQWMsRUFBRSxPQUFPLEVBQy9GLGNBQWMsRUFBRSxHQUFHLENBQUMsQ0FBQzt3Q0FDekIsT0FBTyxDQUFDLEdBQUcsQ0FBQyxRQUFRLENBQUMsQ0FBQTs7Ozs7O3dCQW5EaEIsQ0FBQyxHQUFHLENBQUM7Ozs2QkFBRSxDQUFBLENBQUMsR0FBRyxhQUFhLENBQUE7c0RBQXhCLENBQUM7Ozs7O3dCQUF5QixDQUFDLEVBQUUsQ0FBQTs7NEJBd0R0QyxzQkFBTyxlQUFlLEVBQUM7Ozs7S0FDMUI7SUFFTyx5Q0FBVyxHQUFuQjtRQUNJLElBQUksSUFBSSxDQUFDLGVBQWUsQ0FBQyxRQUFRLEVBQUU7WUFDL0IsSUFBSSxDQUFDLGVBQWUsQ0FBQyxRQUFRLENBQUMsT0FBTyxDQUFDLFVBQUMsSUFBZ0I7Z0JBQ25ELElBQUksRUFBRSxDQUFDO1lBQ1gsQ0FBQyxDQUFDLENBQUM7U0FDTjtJQUNMLENBQUM7SUFFYSw0Q0FBYyxHQUE1QixVQUE2QixJQUFZOzs7Ozs7O3dCQUVqQyxxQkFBTSxJQUFJLENBQUMsR0FBRyxDQUFDLFFBQVEsQ0FBQyxJQUFJLEVBQUUsSUFBSSxDQUFDLEVBQUE7O3dCQUFuQyxTQUFtQyxDQUFDOzs7Ozs7O3dCQUdoQyxRQUFRO3dCQUNSLHFCQUFNLElBQUksQ0FBQyxHQUFHLENBQUMsUUFBUSxDQUFDLElBQUksRUFBRSxJQUFJLENBQUMsRUFBQTs7d0JBRG5DLFFBQVE7d0JBQ1IsU0FBbUMsQ0FBQzs7Ozt3QkFFcEMsTUFBTSxJQUFJLEtBQUssQ0FBQyw4REFBNEQsTUFBSSxNQUFHOzZCQUMvRSx5Q0FBdUMsSUFBTSxDQUFBLENBQUMsQ0FBQzs7Ozs7O0tBRzlEO0lBRWEsK0NBQWlCLEdBQS9CLFVBQWdDLEtBQWU7Ozs7Ozs7O3dCQUNyQyxlQUFlLEdBQUc7NEJBQ3BCLGlCQUFpQjs0QkFDakIsSUFBTSxJQUFJLEdBQVEsd0JBQXNCLEtBQUksQ0FBQyxlQUFlLENBQUMsY0FBZ0IsQ0FBQzs0QkFDOUUsSUFBTSxPQUFPLEdBQUssdUJBQXFCLElBQU0sQ0FBQTs0QkFDN0MsT0FBTyxDQUFDLEdBQUcsQ0FBQyxPQUFPLENBQUMsQ0FBQTs0QkFDcEIsT0FBTyxDQUFDLEdBQUcsQ0FBQyxNQUFNLENBQUMsQ0FBQTs0QkFDbkIsT0FBTyxDQUFDLEdBQUcsQ0FBQyxnREFBZ0QsRUFBRSxPQUFPLENBQUMsQ0FBQzs0QkFDdkUsSUFBQSx3QkFBUSxFQUFDLE9BQU8sQ0FBQyxDQUFDLFFBQVEsRUFBRSxDQUFDOzRCQUM3QixPQUFPLENBQUMsR0FBRyxDQUFDLGlCQUFpQixDQUFDLENBQUM7NEJBQy9CLGVBQWU7d0JBQ25CLENBQUMsQ0FBQzt3QkFFSSxrQkFBa0IsR0FBdUMsVUFBTyxJQUFZOzs7Ozs7d0NBRXhFLE1BQU0sR0FBdUI7NENBQy9CLE9BQU8sRUFBRSxJQUFJLENBQUMsZUFBZSxDQUFDLFlBQVk7NENBQzFDLEdBQUcsRUFBRSxpQkFBaUI7NENBQ3RCLG9CQUFvQjs0Q0FDcEIsSUFBSSxFQUFFO2dEQUNGLFFBQVEsRUFBRSxJQUFJLENBQUMsZUFBZSxDQUFDLEVBQUU7Z0RBQ2pDLFFBQVEsRUFBRSxJQUFJLENBQUMsZUFBZSxDQUFDLEVBQUU7NkNBQ3BDO3lDQUNKLENBQUE7Ozs7d0NBR29CLHFCQUFNLEtBQUssQ0FBQyxNQUFNLENBQUMsRUFBQTs7d0NBQTlCLFFBQVEsR0FBRyxTQUFtQjt3Q0FDOUIsS0FBSyxHQUFHLE1BQUEsUUFBUSxDQUFDLElBQUksMENBQUUsS0FBSyxDQUFDO3dDQUNuQyxJQUFJLEtBQUssQ0FBQyxNQUFNLElBQUksQ0FBQyxFQUFFOzRDQUNuQixzQkFBTyxLQUFLLEVBQUM7eUNBQ2hCO3dDQUVLLFVBQVUsR0FBRyxLQUFLLENBQUMsQ0FBQyxDQUFDLENBQUM7d0NBQ3RCLGNBQWMsR0FBRyxJQUFJLENBQUMsS0FBSyxDQUFDLFVBQVUsQ0FBQyxTQUFTLENBQUMsQ0FBQzt3Q0FDeEQsc0JBQU8sVUFBVSxDQUFDLE1BQU0sSUFBSSxTQUFTLElBQUksY0FBYyxJQUFJLElBQUksRUFBQzs7O3dDQUVoRSxPQUFPLENBQUMsR0FBRyxDQUFDLDRHQUNOLE9BQUssQ0FBQyxVQUFVLHlCQUFvQixPQUFLLENBQUMsT0FBUyxDQUFDLENBQUM7Ozs7OzZCQUVsRSxDQUFDO3dCQUVJLG9CQUFvQixHQUFHLFVBQU8sSUFBWTs7Ozs7d0NBQzVDLElBQUksSUFBSSxJQUFJLElBQUk7NENBQUUsc0JBQU8sSUFBSSxFQUFDO3dDQUV4QixVQUFVLEdBQVUsZ0JBQWdCLENBQUMsSUFBSSxDQUFDLGVBQWUsQ0FBQyxjQUFjLENBQUMsQ0FBQzt3Q0FDMUUsZUFBZSxHQUFLLFVBQVUsQ0FBQyxHQUFHLENBQUMsa0JBQWtCLENBQUMsQ0FBQzt3Q0FDdkQsZ0JBQWdCLEdBQUksb0NBQWlCLENBQUMsSUFBSSxDQUFDLEtBQUssQ0FBQyxDQUFDO3dDQUNsRCxPQUFPLEdBQWEsSUFBSSxDQUFDLEtBQUssQ0FBQyxHQUFHLENBQUMsQ0FBQyxJQUFJLENBQUMsS0FBSyxDQUFDLENBQUM7d0NBR2hELE1BQU0sR0FBdUI7NENBQy9CLE9BQU8sRUFBRSxJQUFJLENBQUMsZUFBZSxDQUFDLFlBQVk7NENBQzFDLGdGQUFnRjs0Q0FDaEYsdUJBQXVCOzRDQUN2QixHQUFHLEVBQUUsb0NBQW9DLEdBQUcsZUFBZSxHQUFHLEtBQUssR0FBRyxPQUFPLEdBQUcsY0FBYztnREFDMUYsZ0JBQWdCOzRDQUNwQixvQkFBb0I7NENBQ3BCLElBQUksRUFBRTtnREFDRixRQUFRLEVBQUUsSUFBSSxDQUFDLGVBQWUsQ0FBQyxFQUFFO2dEQUNqQyxRQUFRLEVBQUUsSUFBSSxDQUFDLGVBQWUsQ0FBQyxFQUFFOzZDQUNwQzt5Q0FDSixDQUFBOzs7O3dDQUdvQixxQkFBTSxLQUFLLENBQUMsTUFBTSxDQUFDLEVBQUE7O3dDQUE5QixRQUFRLEdBQUcsU0FBbUI7d0NBQ3BDLE9BQU8sQ0FBQyxHQUFHLENBQUMscURBQW1ELE9BQVMsQ0FBQyxDQUFDO3dDQUMxRSxzQkFBTyxRQUFRLENBQUMsSUFBSSxFQUFDOzs7d0NBRWYsR0FBRyxHQUFHLHVFQUFvRSxPQUFPLE1BQUc7NkNBQ3RGLG9CQUFrQixPQUFLLENBQUMsT0FBUyxDQUFBLENBQUE7d0NBQ3JDLE1BQU0sSUFBSSxLQUFLLENBQUMsR0FBRyxDQUFDLENBQUM7Ozs7NkJBRTVCLENBQUE7d0JBRUssMkJBQTJCLEdBQUcsVUFBTyxrQkFBa0I7Ozs7NENBR2pELHFCQUFNLGtCQUFrQixDQUFDLGtCQUFrQixDQUFDLEVBQUE7OzZDQUE3QyxDQUFDLENBQUEsU0FBNEMsQ0FBQTt3Q0FDMUMsR0FBRyxHQUFHLElBQUksQ0FBQyxHQUFHLEVBQUUsQ0FBQyxPQUFPLEVBQUUsQ0FBQTt3Q0FDMUIsY0FBYyxHQUFHLENBQUMsR0FBRyxHQUFHLGtCQUFrQixDQUFDLE9BQU8sRUFBRSxDQUFDLEdBQUcsQ0FBQyxJQUFJLEdBQUcsRUFBRSxDQUFDLENBQUE7d0NBQ3pFLElBQUksY0FBYyxHQUFHLEVBQUU7NENBQUUsTUFBTSxJQUFJLEtBQUssQ0FBQyw2REFBNkQsQ0FBQyxDQUFDO3dDQUV4RyxlQUFlO3dDQUNmLHFCQUFNLElBQUksT0FBTyxDQUFDLFVBQUEsT0FBTyxJQUFJLE9BQUEsVUFBVSxDQUFDLE9BQU8sRUFBRSxJQUFJLENBQUMsRUFBekIsQ0FBeUIsQ0FBQyxFQUFBOzt3Q0FEdkQsZUFBZTt3Q0FDZixTQUF1RCxDQUFDOzs7Ozs2QkFFL0QsQ0FBQTt3QkFFSyxrQkFBa0IsR0FBRyxJQUFJLENBQUMsR0FBRyxFQUFFLENBQUM7d0JBQ2hDLGNBQWMsR0FBRyxJQUFBLGdCQUFNLEdBQUUsQ0FBQzt3QkFDaEMsZUFBZSxFQUFFLENBQUM7d0JBQ1osYUFBYSxHQUFHLElBQUEsZ0JBQU0sR0FBRSxDQUFDOzs7O3dCQUUzQixxQkFBTSwyQkFBMkIsQ0FBQyxrQkFBa0IsQ0FBQyxFQUFBOzt3QkFBckQsU0FBcUQsQ0FBQzs7Ozt3QkFFdEQsT0FBTyxDQUFDLEdBQUcsQ0FBQyxPQUFLLENBQUMsQ0FBQzt3QkFDbkIsc0JBQU8sSUFBSSxFQUFDOzt3QkFHVixnQkFBZ0IsR0FBRyxJQUFBLGdCQUFNLEdBQUUsQ0FBQzt3QkFDNUIsWUFBWSxHQUFHLEVBQUUsQ0FBQzs7Ozt3QkFDTCxVQUFBLFNBQUEsS0FBSyxDQUFBOzs7O3dCQUFiLElBQUk7Ozs7d0JBRWEscUJBQU0sb0JBQW9CLENBQUMsSUFBSSxDQUFDLEVBQUE7O3dCQUE5QyxXQUFXLEdBQUcsU0FBZ0M7d0JBQ3BELFlBQVksQ0FBQyxJQUFJLENBQUMsV0FBVyxDQUFDLENBQUM7Ozs7d0JBRS9CLE9BQU8sQ0FBQyxHQUFHLENBQUMsOENBQThDLEVBQUUsSUFBSSxFQUFFLGFBQWEsRUFBRSxPQUFLLENBQUMsT0FBTyxDQUFDLENBQUM7Ozs7Ozs7Ozs7Ozs7Ozs7O3dCQUdsRyxlQUFlLEdBQUcsSUFBQSxnQkFBTSxHQUFFLENBQUM7d0JBRWpDLE9BQU8sQ0FBQyxHQUFHLENBQUMsbUJBQW1CLEVBQUUsYUFBYSxDQUFDLElBQUksQ0FBQyxjQUFjLEVBQUUsU0FBUyxDQUFDLENBQUMsQ0FBQzt3QkFDaEYsT0FBTyxDQUFDLEdBQUcsQ0FBQyxxQkFBcUIsRUFBRSxlQUFlLENBQUMsSUFBSSxDQUFDLGdCQUFnQixFQUFFLFNBQVMsQ0FBQyxDQUFDLENBQUM7d0JBRXRGLHNCQUFPLFlBQVksRUFBQzs7OztLQUN2QjtJQS9PRDtRQURDLElBQUEsa0JBQU0sRUFBQyx1REFBK0MsQ0FBQyxlQUFlLENBQUM7O2dFQUN2QztJQUdqQztRQURDLElBQUEsa0JBQU0sRUFBQyx1REFBK0MsQ0FBQyxHQUFHLENBQUM7O29EQUNuRDtJQU5BLG1CQUFtQjtRQUQvQixJQUFBLHNCQUFVLEdBQUU7T0FDQSxtQkFBbUIsQ0FvUC9CO0lBQUQsMEJBQUM7Q0FBQSxBQXBQRCxJQW9QQztBQXBQWSxrREFBbUIifQ==
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoic29uYXJRdWJlUXVhbnRpZmllci5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbIi4uLy4uLy4uLy4uL3NyYy9zb25hclF1YmVRdWFudGlmaWVyL3NvbmFyUXViZVF1YW50aWZpZXIudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSx1Q0FBdUQ7QUFDdkQsK0NBQXVDO0FBRXZDLHVEQUFxRDtBQUVyRCw4REFBOEQ7QUFDOUQsSUFBTSxLQUFLLEdBQUcsT0FBTyxDQUFDLE9BQU8sQ0FBQyxDQUFDO0FBQy9CLDhEQUE4RDtBQUM5RCxJQUFNLGdCQUFnQixHQUFHLE9BQU8sQ0FBQyxtQkFBbUIsQ0FBQyxDQUFDO0FBQ3RELDJEQUE0RDtBQUU1RCxrQ0FBeUU7QUFFekUsK0RBQTREO0FBQzVELGtEQUE0QjtBQUM1QiwyRkFBaUo7QUFJako7SUFBQTtJQXFQQSxDQUFDO0lBM09TLHNDQUFRLEdBQWQsVUFBZSxVQUF3Qjs7Ozs7Ozt3QkFDbkM7Ozs7OzJCQUtHO3dCQUNILElBQUksQ0FBQyxNQUFNLENBQUMsSUFBSSxDQUFDLGlDQUFpQyxDQUFDLENBQUE7d0JBQzdDLE1BQU0sR0FBRyxJQUFJLEdBQUcsRUFBa0IsQ0FBQzt3QkFDckMsT0FBTyxHQUFrRSxFQUFFLENBQUE7NENBRXBFLFFBQVE7NEJBQ2YsSUFBSSxNQUFNLENBQUMsR0FBRyxDQUFDLFFBQVEsQ0FBQyxNQUFNLENBQUMsSUFBSSxDQUFDLEtBQUssQ0FBQztrREFBVzs0QkFDckQsTUFBTSxDQUFDLEdBQUcsQ0FBQyxRQUFRLENBQUMsTUFBTSxDQUFDLElBQUksRUFBRSxDQUFDLENBQUMsQ0FBQzs0QkFFcEMsSUFBTSxXQUFXLEdBQUcsVUFBVSxDQUFDLE1BQU0sQ0FBQyxVQUFBLEdBQUc7Z0NBQ3JDLE9BQU8sR0FBRyxDQUFDLE1BQU0sQ0FBQyxJQUFJLEtBQUssUUFBUSxDQUFD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
