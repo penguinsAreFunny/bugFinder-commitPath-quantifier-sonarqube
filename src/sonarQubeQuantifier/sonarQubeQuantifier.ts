@@ -108,9 +108,9 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             this.logger.info("\tCheckout time:\t",    checkoutTime);
             this.logger.info("\tSonarQube time:\t",   sonarQubeTime);
             this.logger.info("\tTotal time:\t",       totalTime);
-            this.logger.info("\tEstimated time for next ", commits.length-i, " commits: with ",
-                totalTime, "s time per commit: ", estimatedTimeS , "s = ", estimatedTimeM, "m = ",
-                estimatedTimeH, "h  = ", estimatedTimeD, "d");
+            this.logger.info("\tEstimated time for next " + (commits.length-i) + " commits: with " +
+                totalTime + "s time per commit: " +  estimatedTimeS + "s = " + estimatedTimeM + "m = " +
+                estimatedTimeH + "h  = " + estimatedTimeD + "d");
             this.logger.info("\n\n\n")
             // @formatter:on
 
