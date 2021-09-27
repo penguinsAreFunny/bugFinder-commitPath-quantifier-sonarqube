@@ -13,12 +13,11 @@ import {BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES} from "../TYPES";
 import {Git, GitFileType, Commit} from "bugfinder-localityrecorder-commit"
 import {SonarQubeMeasurement} from "./sonarQubeMeasurement";
 import moment from "moment";
-import {BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES} from "../../../bugFinder-commitPath-localityPreprocessor-commitSubset/src";
 import {Logger} from "ts-log";
 
 @injectable()
 export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeasurement> {
-    @optional() @inject(BUGFINDER_COMMITPATH_LOCALITYPREPROCESSOR_COMMITSUBSET_TYPES.logger)
+    @optional() @inject(BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES.logger)
     logger: Logger
 
     @inject(BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES.sonarQubeConfig)
