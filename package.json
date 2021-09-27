@@ -39,10 +39,11 @@
   "dependencies": {
     "@types/node": "^15.12.2",
     "axios": "^0.21.0",
-    "bugfinder-framework": "^8.0.0",
+    "bugfinder-framework": "^8.3.2",
     "bugfinder-localityrecorder-commitpath": "^1.0.6",
     "moment": "^2.29.1",
     "properties-reader": "^2.1.1",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "ts-log": "^2.2.3"
   }
 }
