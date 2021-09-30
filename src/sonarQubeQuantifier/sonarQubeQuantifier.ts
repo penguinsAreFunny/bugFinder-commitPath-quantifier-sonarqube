@@ -70,6 +70,10 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
                 continue
             }
 
+            const beforeCheckout = moment();
+            await this.checkoutCommit(commit.hash);
+            const afterCheckout = moment();
+
             const beforePreHooks = moment();
             try {
                 this.runPreHooks();
@@ -79,10 +83,6 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
                 continue;
             }
             const afterPreHooks = moment();
-
-            const beforeCheckout = moment();
-            await this.checkoutCommit(commit.hash);
-            const afterCheckout = moment();
 
             const beforeSonarQube = moment();
             const measurements = await this.sonarQubeQuantify(commit.paths, commit.hash);
