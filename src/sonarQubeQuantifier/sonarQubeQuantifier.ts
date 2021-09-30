@@ -71,7 +71,13 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             }
 
             const beforePreHooks = moment();
-            this.runPreHooks();
+            try {
+                this.runPreHooks();
+            } catch (error) {
+                this.logger.error(`SonarQubeQuantifier: Prehooks failed for commit ${commit.hash} with error: ` +
+                    `${error.message}. Aborting quantification of commit.`, error)
+                continue;
+            }
             const afterPreHooks = moment();
 
             const beforeCheckout = moment();
