@@ -71,7 +71,12 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             }
 
             const beforeCheckout = moment();
-            await this.checkoutCommit(commit.hash);
+            try {
+                await this.checkoutCommit(commit.hash);
+            } catch (err) {
+                this.logger.error(err.message)
+                continue
+            }
             const afterCheckout = moment();
 
             const beforePreHooks = moment();
@@ -143,7 +148,6 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             } catch (err2) {
                 const msg = `SonarQubeQuantifier: git checkout retry failed with msg: ${err2}.` +
                     ` Aborting quantification for commit ${hash}`
-                this.logger.error(msg)
                 throw new Error(msg);
             }
         }
