@@ -132,13 +132,18 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
 
     private runPreHooks() {
         if (this.sonarQubeConfig.preHooks) {
-            this.sonarQubeConfig.preHooks.forEach((hook: () => void) => {
-                hook();
-            });
+            this.sonarQubeConfig.preHooks.forEach((hook: () => void, index) => {
+                try {
+                    hook();
+                }catch(error){
+                    this.logger.error(`Error: Failed hook number ${index}. Error was: ${error.message}`, error)
+                }
+            })
         }
     }
 
     private async checkoutCommit(hash: string) {
+        // TypeScript failed bei Commit: 1a2de721b597f087f0fcf91937fa972b010dc647 whyyy???
         try {
             await this.git.checkout(hash, true);
         } catch (err) {
