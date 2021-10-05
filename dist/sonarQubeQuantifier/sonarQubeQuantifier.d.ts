@@ -9,6 +9,11 @@ export declare class SonarQubeQuantifier implements Quantifier<CommitPath, Sonar
     sonarQubeConfig: SonarQubeConfig;
     git: Git;
     quantify(localities: CommitPath[]): Promise<LocalityMap<CommitPath, SonarQubeMeasurement>>;
+    quantifyCommit(commits: {
+        hash: string;
+        localities: CommitPath[];
+        paths: string[];
+    }[], i: number, quantifications: LocalityMap<CommitPath, SonarQubeMeasurement>): Promise<void>;
     private runPreHooks;
     private checkoutCommit;
     private sonarQubeQuantify;
