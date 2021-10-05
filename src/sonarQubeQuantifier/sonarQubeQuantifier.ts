@@ -61,73 +61,71 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
 
         // quantifying each commit
         for (let i = 0; i < commits.length; i++) {
-            const commit = commits[i];
-            this.logger.info(`Quantifying commit ${i + 1} of ${commits.length}. Hash: ${commit.hash}`);
-
-            if (commit.paths.length == 0 || commit.paths[0] == undefined) {
-                this.logger.info("ignoring commit as no paths are left to quantify for this commit. If you like",
-                    "to inject on empty paths see pathsHandling-injections")
-                continue
-            }
-
-            const beforeCheckout = moment();
-            try {
-                await this.checkoutCommit(commit.hash);
-            } catch (err) {
-                this.logger.error(err.message)
-                continue
-            }
-            const afterCheckout = moment();
-
-            const beforePreHooks = moment();
-            try {
-                this.runPreHooks();
-            } catch (error) {
-                this.logger.error(`SonarQubeQuantifier: Prehooks failed for commit ${commit.hash} with error: ` +
-                    `${error.message}. Aborting quantification of commit.`, error)
-                continue;
-            }
-            const afterPreHooks = moment();
-
-            const beforeSonarQube = moment();
-            const measurements = await this.sonarQubeQuantify(commit.paths, commit.hash);
-            const afterSonarQube = moment();
-
-            if (measurements.length != commit.localities.length) {
-                this.logger.error(`ERROR: SonarQubeQuantifier failed for commit ${commit.hash}.`);
-                continue;
-            }
-
-            commit.localities.forEach((locality, x) => {
-                let parsedMeasurement = undefined;
-                if (measurements[x] != null) {
-                    parsedMeasurement = new SonarQubeMeasurement(measurements[x])
-                }
-                quantifications.set(locality, parsedMeasurement);
-            })
-
-            // @formatter:off
-            const preHooksTime  = afterPreHooks.diff(beforePreHooks, "seconds")
-            const checkoutTime  = afterCheckout.diff(beforeCheckout, "seconds")
-            const sonarQubeTime = afterSonarQube.diff(beforeSonarQube, "seconds")
-            const totalTime     = preHooksTime + checkoutTime + sonarQubeTime
-            const estimatedTimeS = totalTime * (commits.length-i);
-            const estimatedTimeM = Math.round((estimatedTimeS/60)*100)/100;
-            const estimatedTimeH = Math.round((estimatedTimeS/(60*60))*100)/100;
-            const estimatedTimeD = Math.round((estimatedTimeS/(60*60*24))*100)/100;
-            this.logger.info("\tPrehooks time:\t",    preHooksTime);
-            this.logger.info("\tCheckout time:\t",    checkoutTime);
-            this.logger.info("\tSonarQube time:\t",   sonarQubeTime);
-            this.logger.info("\tTotal time:\t",       totalTime);
-            this.logger.info("\tEstimated time for next " + (commits.length-i) + " commits: with " +
-                totalTime + "s time per commit: " +  estimatedTimeS + "s = " + estimatedTimeM + "m = " +
-                estimatedTimeH + "h  = " + estimatedTimeD + "d");
-            this.logger.info("\n\n\n")
-            // @formatter:on
-
+            await this.quantifyCommit(commits, i, quantifications)
         }
 
         return quantifications;
+    }
+
+    public async quantifyCommit(commits: { hash: string, localities: CommitPath[], paths: string[] }[], i: number,
+                                 quantifications: LocalityMap<CommitPath, SonarQubeMeasurement>) {
+
+        const commit = commits[i]
+
+        const beforeCheckout = moment();
+        try {
+            await this.checkoutCommit(commit.hash);
+        } catch (err) {
+            this.logger.error(err.message)
+            return
+        }
+        const afterCheckout = moment();
+
+        const beforePreHooks = moment();
+        try {
+            this.runPreHooks();
+        } catch (error) {
+            this.logger.error(`SonarQubeQuantifier: Prehooks failed for commit ${commit.hash} with error: ` +
+                `${error.message}. Aborting quantification of commit.`, error)
+            return
+        }
+        const afterPreHooks = moment();
+
+        const beforeSonarQube = moment();
+        const measurements = await this.sonarQubeQuantify(commit.paths, commit.hash);
+        const afterSonarQube = moment();
+
+        if (measurements.length != commit.localities.length) {
+            this.logger.error(`ERROR: SonarQubeQuantifier failed for commit ${commit.hash}.`);
+            return
+        }
+
+        commit.localities.forEach((locality, x) => {
+            let parsedMeasurement = undefined;
+            if (measurements[x] != null) {
+                parsedMeasurement = new SonarQubeMeasurement(measurements[x])
+            }
+            quantifications.set(locality, parsedMeasurement);
+        })
+
+        // @formatter:off
+        const preHooksTime  = afterPreHooks.diff(beforePreHooks, "seconds")
+        const checkoutTime  = afterCheckout.diff(beforeCheckout, "seconds")
+        const sonarQubeTime = afterSonarQube.diff(beforeSonarQube, "seconds")
+        const totalTime     = preHooksTime + checkoutTime + sonarQubeTime
+        const estimatedTimeS = totalTime * (commits.length-i);
+        const estimatedTimeM = Math.round((estimatedTimeS/60)*100)/100;
+        const estimatedTimeH = Math.round((estimatedTimeS/(60*60))*100)/100;
+        const estimatedTimeD = Math.round((estimatedTimeS/(60*60*24))*100)/100;
+        this.logger.info("\tPrehooks time:\t",    preHooksTime);
+        this.logger.info("\tCheckout time:\t",    checkoutTime);
+        this.logger.info("\tSonarQube time:\t",   sonarQubeTime);
+        this.logger.info("\tTotal time:\t",       totalTime);
+        this.logger.info("\tEstimated time for next " + (commits.length-i) + " commits: with " +
+            totalTime + "s time per commit: " +  estimatedTimeS + "s = " + estimatedTimeM + "m = " +
+            estimatedTimeH + "h  = " + estimatedTimeD + "d");
+        this.logger.info("\n\n\n")
+        // @formatter:on
     }
 
     private runPreHooks() {
