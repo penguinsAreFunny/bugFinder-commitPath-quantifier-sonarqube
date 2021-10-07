@@ -33,7 +33,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
          * git checkout and SonarQube-quantification is costly therefore only run this process once
          * for each commit
          */
-        this.logger.info("SonarQubeQuantifier starting...")
+        this.logger?.info("SonarQubeQuantifier starting...")
         const hashes = new Map<string, number>();
         let commits: { hash: string, localities: CommitPath[], paths: string[] }[] = []
 
@@ -57,7 +57,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         }
 
         const quantifications = new LocalityMap<CommitPath, SonarQubeMeasurement>();
-        this.logger.info("Total commits: ", commits.length)
+        this.logger?.info("Total commits: ", commits.length)
 
         // quantifying each commit
         for (let i = 0; i < commits.length; i++) {
@@ -76,7 +76,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         try {
             await this.checkoutCommit(commit.hash);
         } catch (err) {
-            this.logger.error(err.message)
+            this.logger?.error(err.message)
             return
         }
         const afterCheckout = moment();
@@ -85,7 +85,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         try {
             this.runPreHooks();
         } catch (error) {
-            this.logger.error(`SonarQubeQuantifier: Prehooks failed for commit ${commit.hash} with error: ` +
+            this.logger?.error(`SonarQubeQuantifier: Prehooks failed for commit ${commit.hash} with error: ` +
                 `${error.message}. Aborting quantification of commit.`, error)
             return
         }
@@ -96,7 +96,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         const afterSonarQube = moment();
 
         if (measurements.length != commit.localities.length) {
-            this.logger.error(`ERROR: SonarQubeQuantifier failed for commit ${commit.hash}.`);
+            this.logger?.error(`ERROR: SonarQubeQuantifier failed for commit ${commit.hash}.`);
             return
         }
 
@@ -117,14 +117,14 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         const estimatedTimeM = Math.round((estimatedTimeS/60)*100)/100;
         const estimatedTimeH = Math.round((estimatedTimeS/(60*60))*100)/100;
         const estimatedTimeD = Math.round((estimatedTimeS/(60*60*24))*100)/100;
-        this.logger.info("\tPrehooks time:\t",    preHooksTime);
-        this.logger.info("\tCheckout time:\t",    checkoutTime);
-        this.logger.info("\tSonarQube time:\t",   sonarQubeTime);
-        this.logger.info("\tTotal time:\t",       totalTime);
-        this.logger.info("\tEstimated time for next " + (commits.length-i) + " commits: with " +
+        this.logger?.info("\tPrehooks time:\t",    preHooksTime);
+        this.logger?.info("\tCheckout time:\t",    checkoutTime);
+        this.logger?.info("\tSonarQube time:\t",   sonarQubeTime);
+        this.logger?.info("\tTotal time:\t",       totalTime);
+        this.logger?.info("\tEstimated time for next " + (commits.length-i) + " commits: with " +
             totalTime + "s time per commit: " +  estimatedTimeS + "s = " + estimatedTimeM + "m = " +
             estimatedTimeH + "h  = " + estimatedTimeD + "d");
-        this.logger.info("\n\n\n")
+        this.logger?.info("\n\n\n")
         // @formatter:on
     }
 
@@ -134,7 +134,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
                 try {
                     hook();
                 }catch(error){
-                    this.logger.error(`Error: Failed hook number ${index}. Error was: ${error.message}`, error)
+                    this.logger?.error(`Error: Failed hook number ${index}. Error was: ${error.message}`, error)
                 }
             })
         }
@@ -161,11 +161,11 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             // @formatter:off
             const args      = `-Dproject.settings=${this.sonarQubeConfig.propertiesPath}`;
             const command   = `sonar-scanner.bat ${args}`
-            this.logger.info(command)
-            this.logger.info("\n\n")
-            this.logger.info("\tScanning might take a few minutes: Command: ", command);
+            this.logger?.info(command)
+            this.logger?.info("\n\n")
+            this.logger?.info("\tScanning might take a few minutes: Command: ", command);
             execSync(command).toString();
-            this.logger.info("\tFinished scan");
+            this.logger?.info("\tFinished scan");
             //@formatter:on
         };
 
@@ -192,7 +192,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
                 const newestTaskTime = Date.parse(newestTask.startedAt);
                 return newestTask.status == "SUCCESS" && newestTaskTime >= time;
             } catch (error) {
-                this.logger.warn(`\tHttp GET to SonarQube-WebApi with path: "api/ce/activity" failed with error: 
+                this.logger?.warn(`\tHttp GET to SonarQube-WebApi with path: "api/ce/activity" failed with error: 
                     ${error.statusCode}. Error message: ${error.message}. CommitHash: ${commitHash}`);
             }
         };
@@ -221,7 +221,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
 
             try {
                 const response = await axios(config);
-                this.logger.info(`\tSuccessfully retrieved measurements for path: ${webPath}`);
+                this.logger?.info(`\tSuccessfully retrieved measurements for path: ${webPath}`);
                 return response.data;
             } catch (error) {
                 const msg = `"\tFailed to retrieve measurements from sonarQubeServer for path ${webPath}.` +
@@ -251,7 +251,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         try {
             await waitUntilWebserverIsUpdated(timeBeforeScanning);
         } catch (error) {
-            this.logger.error(error);
+            this.logger?.error(error);
             return null;
         }
 
@@ -262,14 +262,14 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
                 const measurement = await retrieveMeasurements(path)
                 measurements.push(measurement);
             } catch (error) {
-                this.logger.error("Error: Retrieving of measurements for commit: ", commitHash,
+                this.logger?.error("Error: Retrieving of measurements for commit: ", commitHash,
                     " for path: ", path, "\n\tMessage: ", error.message);
             }
         }
         const afterRetrieving = moment();
 
-        this.logger.info("\tScanning time: ", afterScanning.diff(beforeScanning, "seconds"));
-        this.logger.info("\tRetrieving time: ", afterRetrieving.diff(beforeRetrieving, "seconds"));
+        this.logger?.info("\tScanning time: ", afterScanning.diff(beforeScanning, "seconds"));
+        this.logger?.info("\tRetrieving time: ", afterRetrieving.diff(beforeRetrieving, "seconds"));
 
         return measurements;
     }
