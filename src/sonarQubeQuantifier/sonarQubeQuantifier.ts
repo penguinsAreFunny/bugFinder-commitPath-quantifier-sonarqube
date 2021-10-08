@@ -10,7 +10,7 @@ const propertiesReader = require("properties-reader");
 import {LocalityMap, Quantifier} from "bugfinder-framework";
 import {CommitPath} from "bugfinder-localityrecorder-commitpath";
 import {BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES} from "../TYPES";
-import {Git, GitFileType, Commit} from "bugfinder-localityrecorder-commit"
+import {Git} from "bugfinder-localityrecorder-commit"
 import {SonarQubeMeasurement} from "./sonarQubeMeasurement";
 import moment from "moment";
 import {Logger} from "ts-log";
@@ -61,6 +61,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
 
         // quantifying each commit
         for (let i = 0; i < commits.length; i++) {
+            this.logger?.info(`Quantifying commit ${i + 1} of ${commits.length}`)
             await this.quantifyCommit(commits, i, quantifications)
         }
 
@@ -68,7 +69,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
     }
 
     public async quantifyCommit(commits: { hash: string, localities: CommitPath[], paths: string[] }[], i: number,
-                                 quantifications: LocalityMap<CommitPath, SonarQubeMeasurement>) {
+                                quantifications: LocalityMap<CommitPath, SonarQubeMeasurement>) {
 
         const commit = commits[i]
 
@@ -133,7 +134,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             this.sonarQubeConfig.preHooks.forEach((hook: () => void, index) => {
                 try {
                     hook();
-                }catch(error){
+                } catch (error) {
                     this.logger?.error(`Error: Failed hook number ${index}. Error was: ${error.message}`, error)
                 }
             })
@@ -230,12 +231,12 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             }
         }
 
-        const waitUntilWebserverIsUpdated = async (timeBeforeScanning) => {
+        const waitUntilWebserverIsUpdated = async (timeBeforeScanning2) => {
             // activePolling: waiting until webServerIsUpdated
             // eslint-disable-next-line no-empty
-            while (!await webServerIsUpdated(timeBeforeScanning)) {
+            while (!await webServerIsUpdated(timeBeforeScanning2)) {
                 const now = Date.now().valueOf()
-                const minutesWaiting = (now - timeBeforeScanning.valueOf()) / (1000 * 60)
+                const minutesWaiting = (now - timeBeforeScanning2.valueOf()) / (1000 * 60)
                 if (minutesWaiting > 15)
                     throw new Error(`Timeout: SonarQube-Webserver has not updated for 15 minutes. Commit ${commitHash}`);
 
