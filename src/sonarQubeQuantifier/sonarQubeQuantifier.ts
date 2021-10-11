@@ -69,7 +69,8 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
     }
 
     public async quantifyCommit(commits: { hash: string, localities: CommitPath[], paths: string[] }[], i: number,
-                                quantifications: LocalityMap<CommitPath, SonarQubeMeasurement>) {
+                                quantifications: LocalityMap<CommitPath, SonarQubeMeasurement>)
+        : Promise<SonarQubeMeasurement[]> {
 
         const commit = commits[i]
 
@@ -101,10 +102,12 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             return
         }
 
+        let parsedMeasurements: SonarQubeMeasurement[] = []
         commit.localities.forEach((locality, x) => {
             let parsedMeasurement = undefined;
             if (measurements[x] != null) {
                 parsedMeasurement = new SonarQubeMeasurement(measurements[x])
+                parsedMeasurements.push(parsedMeasurement)
             }
             quantifications.set(locality, parsedMeasurement);
         })
@@ -127,6 +130,8 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             estimatedTimeH + "h  = " + estimatedTimeD + "d");
         this.logger?.info("\n\n\n")
         // @formatter:on
+
+        return parsedMeasurements
     }
 
     private runPreHooks() {
