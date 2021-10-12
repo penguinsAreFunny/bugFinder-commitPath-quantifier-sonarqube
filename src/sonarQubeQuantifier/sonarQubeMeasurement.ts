@@ -1,74 +1,4 @@
-/**
- * This class is dependent on SonarQube version 9.0.1
- */
-export class SonarQubeMeasurement {
-
-    /**
-     * Generates a SonarQubeMeasurements out of the response from the
-     * SonarQube-webserver
-     * @param response
-     */
-    constructor(response: any) {
-        const component = response.component
-        const measures = component.measures
-
-        this.qualifier = component.qualifier
-        this.language = component.language
-
-        this.parseByRefNumber("cognitive_complexity", this.cognitiveComplexity, measures)
-        this.parseByRefNumber("duplicated_lines_density", this.duplicatedLinesDensity, measures)
-        this.parseByRefNumber("security_rating", this.securityRating, measures)
-        this.parseByRefNumber("blocker_violations", this.blockerViolations, measures)
-        this.parseByRefNumber("duplicated_blocks", this.duplicatedBlocks, measures)
-        this.parseByRefNumber("vulnerabilities", this.vulnerabilities, measures)
-        this.parseByRefNumber("classes", this.classes, measures)
-        this.parseByRefNumber("security_review_rating", this.securityReviewRating, measures)
-        this.parseByRefNumber("functions", this.functions, measures)
-        this.parseByRefNumber("sqale_index", this.sqaleIndex, measures)
-        this.parseByRefNumber("bugs", this.bugs, measures)
-        this.parseByRefNumber("info_violations", this.infoViolations, measures)
-        this.parseByRefNumber("coverage", this.coverage, measures)
-        this.parseByRefNumber("generated_ncloc", this.generatedNcloc, measures)
-        this.parseByRefNumber("lines", this.lines, measures)
-        this.parseByRefNumber("ncloc", this.ncloc, measures)
-        this.parseByRefNumber("generated_lines", this.generatedLines, measures)
-        this.parseByRefNumber("lines_to_cover", this.linesToCover, measures)
-        this.parseByRefNumber("reopened_issues", this.reopenedIssues, measures)
-        this.parseByRefNumber("confirmed_issues", this.confirmedIssues, measures)
-        this.parseByRefNumber("test_success_density", this.testSuccessDensity, measures)
-        this.parseByRefNumber("security_hotspots", this.securityHotspots, measures)
-        this.parseByRefNumber("major_violations", this.majorViolations, measures)
-        this.parseByRefNumber("violations", this.violations, measures)
-        this.parseByRefNumber("uncovered_lines", this.uncoveredLines, measures)
-        this.parseByRefNumber("minor_violations", this.minorViolations, measures)
-        this.parseByRefNumber("critical_violations", this.criticalViolations, measures)
-        this.parseByRefNumber("false_positive_issues", this.falsePositiveIssues, measures)
-        this.parseByRefNumber("statements", this.statements, measures)
-        this.parseByRefNumber("test_failures", this.testFailures, measures)
-        this.parseByRefNumber("duplicated_files", this.duplicatedFiles, measures)
-        this.parseByRefNumber("reliability_remediation_effort", this.reliabilityRemediationEffort, measures)
-        this.parseByRefNumber("comment_lines_density", this.commentLines, measures)
-        this.parseByRefNumber("line_coverage", this.lineCoverage, measures)
-        this.parseByRefNumber("sqale_debt_ratio", this.sqaleDebtRatio, measures)
-        this.parseByRefNumber("sqale_rating", this.sqaleRating, measures)
-        this.parseByRefNumber("reliability_rating", this.reliabilityRating, measures)
-        this.parseByRefNumber("files", this.files, measures)
-        this.parseByRefNumber("wont_fix_issues", this.wontFixIssues, measures)
-        this.parseByRefNumber("skipped_tests", this.skippedTests, measures)
-        this.parseByRefNumber("code_smells", this.codeSmells, measures)
-        this.parseByRefNumber("effort_to_reach_maintainability_rating_a", this.effortToReachMaintainabilityRatingA, measures)
-        this.parseByRefNumber("complexity", this.complexity, measures)
-        this.parseByRefNumber("comment_lines", this.commentLines, measures)
-        this.parseByRefNumber("duplicated_lines", this.duplicatedLines, measures)
-        this.parseByRefNumber("security_remediation_effort", this.securityRemediationEffort, measures)
-        this.parseByRefNumber("open_issues", this.openIssues, measures)
-        this.parseByRefNumber("test_errors", this.testErrors, measures)
-
-    }
-
-    qualifier: string
-    language: string
-
+export class SonarQubeMeasures {
     cognitiveComplexity = new Measure<number>()
     duplicatedLinesDensity = new Measure<number>()
     securityRating = new Measure<number>()
@@ -117,7 +47,83 @@ export class SonarQubeMeasurement {
     securityRemediationEffort = new Measure<number>()
     openIssues = new Measure<number>()
     testErrors = new Measure<number>()
+}
+/**
+ * This class is dependent on SonarQube version 9.0.1
+ */
+export class SonarQubeMeasurement {
 
+    /**
+     * Generates a SonarQubeMeasurements out of the response from the
+     * SonarQube-webserver
+     * @param response
+     */
+    constructor(response?: any) {
+        if (response == undefined) {
+            return;
+        }
+
+        const component = response.component
+        const measures = component.measures
+
+        this.qualifier = component.qualifier
+        this.language = component.language
+
+        this.parseByRefNumber("cognitive_complexity", this.measures.cognitiveComplexity, measures)
+        this.parseByRefNumber("duplicated_lines_density", this.measures.duplicatedLinesDensity, measures)
+        this.parseByRefNumber("security_rating", this.measures.securityRating, measures)
+        this.parseByRefNumber("blocker_violations", this.measures.blockerViolations, measures)
+        this.parseByRefNumber("duplicated_blocks", this.measures.duplicatedBlocks, measures)
+        this.parseByRefNumber("vulnerabilities", this.measures.vulnerabilities, measures)
+        this.parseByRefNumber("classes", this.measures.classes, measures)
+        this.parseByRefNumber("security_review_rating", this.measures.securityReviewRating, measures)
+        this.parseByRefNumber("functions", this.measures.functions, measures)
+        this.parseByRefNumber("sqale_index", this.measures.sqaleIndex, measures)
+        this.parseByRefNumber("bugs", this.measures.bugs, measures)
+        this.parseByRefNumber("info_violations", this.measures.infoViolations, measures)
+        this.parseByRefNumber("coverage", this.measures.coverage, measures)
+        this.parseByRefNumber("generated_ncloc", this.measures.generatedNcloc, measures)
+        this.parseByRefNumber("lines", this.measures.lines, measures)
+        this.parseByRefNumber("ncloc", this.measures.ncloc, measures)
+        this.parseByRefNumber("generated_lines", this.measures.generatedLines, measures)
+        this.parseByRefNumber("lines_to_cover", this.measures.linesToCover, measures)
+        this.parseByRefNumber("reopened_issues", this.measures.reopenedIssues, measures)
+        this.parseByRefNumber("confirmed_issues", this.measures.confirmedIssues, measures)
+        this.parseByRefNumber("test_success_density", this.measures.testSuccessDensity, measures)
+        this.parseByRefNumber("security_hotspots", this.measures.securityHotspots, measures)
+        this.parseByRefNumber("major_violations", this.measures.majorViolations, measures)
+        this.parseByRefNumber("violations", this.measures.violations, measures)
+        this.parseByRefNumber("uncovered_lines", this.measures.uncoveredLines, measures)
+        this.parseByRefNumber("minor_violations", this.measures.minorViolations, measures)
+        this.parseByRefNumber("critical_violations", this.measures.criticalViolations, measures)
+        this.parseByRefNumber("false_positive_issues", this.measures.falsePositiveIssues, measures)
+        this.parseByRefNumber("statements", this.measures.statements, measures)
+        this.parseByRefNumber("test_failures", this.measures.testFailures, measures)
+        this.parseByRefNumber("duplicated_files", this.measures.duplicatedFiles, measures)
+        this.parseByRefNumber("reliability_remediation_effort", this.measures.reliabilityRemediationEffort, measures)
+        this.parseByRefNumber("comment_lines_density", this.measures.commentLines, measures)
+        this.parseByRefNumber("line_coverage", this.measures.lineCoverage, measures)
+        this.parseByRefNumber("sqale_debt_ratio", this.measures.sqaleDebtRatio, measures)
+        this.parseByRefNumber("sqale_rating", this.measures.sqaleRating, measures)
+        this.parseByRefNumber("reliability_rating", this.measures.reliabilityRating, measures)
+        this.parseByRefNumber("files", this.measures.files, measures)
+        this.parseByRefNumber("wont_fix_issues", this.measures.wontFixIssues, measures)
+        this.parseByRefNumber("skipped_tests", this.measures.skippedTests, measures)
+        this.parseByRefNumber("code_smells", this.measures.codeSmells, measures)
+        this.parseByRefNumber("effort_to_reach_maintainability_rating_a", this.measures.effortToReachMaintainabilityRatingA, measures)
+        this.parseByRefNumber("complexity", this.measures.complexity, measures)
+        this.parseByRefNumber("comment_lines", this.measures.commentLines, measures)
+        this.parseByRefNumber("duplicated_lines", this.measures.duplicatedLines, measures)
+        this.parseByRefNumber("security_remediation_effort", this.measures.securityRemediationEffort, measures)
+        this.parseByRefNumber("open_issues", this.measures.openIssues, measures)
+        this.parseByRefNumber("test_errors", this.measures.testErrors, measures)
+
+    }
+
+    qualifier?: string
+    language?: string
+
+    measures: SonarQubeMeasures = new SonarQubeMeasures()
     /**
      * Returns the object from the SonarQube-Webserver response which contains the metric
      * @param metric
@@ -155,6 +161,7 @@ export class SonarQubeMeasurement {
 
 }
 
+
 export class Measure<T> {
     public name: string
     public value: T
@@ -165,5 +172,6 @@ export class Measure<T> {
         this.value = value
         this.bestValue = bestValue
     }
+
 
 }
