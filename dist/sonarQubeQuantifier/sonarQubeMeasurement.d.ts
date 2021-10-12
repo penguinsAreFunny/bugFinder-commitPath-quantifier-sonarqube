@@ -1,15 +1,4 @@
-/**
- * This class is dependent on SonarQube version 9.0.1
- */
-export declare class SonarQubeMeasurement {
-    /**
-     * Generates a SonarQubeMeasurements out of the response from the
-     * SonarQube-webserver
-     * @param response
-     */
-    constructor(response: any);
-    qualifier: string;
-    language: string;
+export declare class SonarQubeMeasures {
     cognitiveComplexity: Measure<number>;
     duplicatedLinesDensity: Measure<number>;
     securityRating: Measure<number>;
@@ -58,6 +47,20 @@ export declare class SonarQubeMeasurement {
     securityRemediationEffort: Measure<number>;
     openIssues: Measure<number>;
     testErrors: Measure<number>;
+}
+/**
+ * This class is dependent on SonarQube version 9.0.1
+ */
+export declare class SonarQubeMeasurement {
+    /**
+     * Generates a SonarQubeMeasurements out of the response from the
+     * SonarQube-webserver
+     * @param response
+     */
+    constructor(response?: any);
+    qualifier?: string;
+    language?: string;
+    measures: SonarQubeMeasures;
     /**
      * Returns the object from the SonarQube-Webserver response which contains the metric
      * @param metric
