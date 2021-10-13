@@ -57,7 +57,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         }
 
         const quantifications = new LocalityMap<CommitPath, SonarQubeMeasurement>();
-        this.logger?.info("Total commits: ", commits.length)
+        this.logger?.info("Total commits: " + commits.length)
 
         // quantifying each commit
         for (let i = 0; i < commits.length; i++) {
@@ -121,14 +121,13 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         const estimatedTimeM = Math.round((estimatedTimeS/60)*100)/100;
         const estimatedTimeH = Math.round((estimatedTimeS/(60*60))*100)/100;
         const estimatedTimeD = Math.round((estimatedTimeS/(60*60*24))*100)/100;
-        this.logger?.info("\tPrehooks time:\t",    preHooksTime);
-        this.logger?.info("\tCheckout time:\t",    checkoutTime);
-        this.logger?.info("\tSonarQube time:\t",   sonarQubeTime);
-        this.logger?.info("\tTotal time:\t",       totalTime);
+        this.logger?.info("\tPrehooks time:\t" +    preHooksTime);
+        this.logger?.info("\tCheckout time:\t" +    checkoutTime);
+        this.logger?.info("\tSonarQube time:\t" +   sonarQubeTime);
+        this.logger?.info("\tTotal time:\t" +       totalTime);
         this.logger?.info("\tEstimated time for next " + (commits.length-i) + " commits: with " +
             totalTime + "s time per commit: " +  estimatedTimeS + "s = " + estimatedTimeM + "m = " +
-            estimatedTimeH + "h  = " + estimatedTimeD + "d");
-        this.logger?.info("\n\n\n")
+            estimatedTimeH + "h  = " + estimatedTimeD + "d\n\n");
         // @formatter:on
 
         return parsedMeasurements
@@ -167,8 +166,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             // @formatter:off
             const args      = `-Dproject.settings=${this.sonarQubeConfig.propertiesPath}`;
             const command   = `sonar-scanner.bat ${args}`
-            this.logger?.info(command)
-            this.logger?.info("\n\n")
+            this.logger?.info(command + "\n\n")
             this.logger?.info("\tScanning might take a few minutes: Command: ", command);
             execSync(command).toString();
             this.logger?.info("\tFinished scan");
@@ -274,8 +272,8 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         }
         const afterRetrieving = moment();
 
-        this.logger?.info("\tScanning time: ", afterScanning.diff(beforeScanning, "seconds"));
-        this.logger?.info("\tRetrieving time: ", afterRetrieving.diff(beforeRetrieving, "seconds"));
+        this.logger?.info("\tScanning time: " + afterScanning.diff(beforeScanning, "seconds"));
+        this.logger?.info("\tRetrieving time: " +  afterRetrieving.diff(beforeRetrieving, "seconds"));
 
         return measurements;
     }
