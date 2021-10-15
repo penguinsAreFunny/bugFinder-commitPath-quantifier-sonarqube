@@ -7,7 +7,7 @@ import {SonarQubeConfig} from "./sonarQubeConfig";
 const axios = require("axios");
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const propertiesReader = require("properties-reader");
-import {LocalityMap, Quantifier} from "bugfinder-framework";
+import {LocalityMap, Quantifier, SHARED_TYPES} from "bugfinder-framework";
 import {CommitPath} from "bugfinder-localityrecorder-commitpath";
 import {BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES} from "../TYPES";
 import {Git} from "bugfinder-localityrecorder-commit"
@@ -17,7 +17,7 @@ import {Logger} from "ts-log";
 
 @injectable()
 export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeasurement> {
-    @optional() @inject(BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES.logger)
+    @optional() @inject(SHARED_TYPES.logger)
     logger: Logger
 
     @inject(BUGFINDER_COMMITPATH_QUANTIFIER_SONARQUBE_TYPES.sonarQubeConfig)
