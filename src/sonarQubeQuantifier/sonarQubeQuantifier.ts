@@ -15,6 +15,9 @@ import {SonarQubeMeasurement} from "./sonarQubeMeasurement";
 import moment from "moment";
 import {Logger} from "ts-log";
 
+
+// TODO: Cache hinzufügen! Wieso? Cache kann jedes mal, wenn Messungen erzeugt werden gefüllt werden (update DB,
+//  ohne Duplikate) Dadurch muss bei Abbrüchen die Stelle nicht erneut Quantifiziert werden!
 @injectable()
 export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeasurement> {
     @optional() @inject(SHARED_TYPES.logger)
@@ -167,7 +170,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             const args      = `-Dproject.settings=${this.sonarQubeConfig.propertiesPath}`;
             const command   = `sonar-scanner.bat ${args}`
             this.logger?.info(command + "\n\n")
-            this.logger?.info("\tScanning might take a few minutes: Command: ", command);
+            this.logger?.info("\tScanning might take a few minutes: Command: " + command);
             execSync(command).toString();
             this.logger?.info("\tFinished scan");
             //@formatter:on
