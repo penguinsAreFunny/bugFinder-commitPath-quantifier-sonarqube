@@ -98,7 +98,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         const afterSonarQube = moment();
 
         if (measurements.length != commit.localities.length) {
-            this.logger?.error(`ERROR: SonarQubeQuantifier failed for commit ${commit.hash}.`);
+            this.logger?.error(`SonarQubeQuantifier failed for commit ${commit.hash}.`);
             return
         }
 
@@ -139,7 +139,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
                 try {
                     hook();
                 } catch (error) {
-                    this.logger?.error(`Error: Failed hook number ${index}. Error was: ${error.message}`, error)
+                    this.logger?.error(`Failed hook number ${index}. Error was: ${error.message}`, error)
                 }
             })
         }
@@ -266,8 +266,8 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
                 const measurement = await retrieveMeasurements(path)
                 measurements.push(measurement);
             } catch (error) {
-                this.logger?.error("Error: Retrieving of measurements for commit: ", commitHash,
-                    " for path: ", path, "\n\tMessage: ", error.message);
+                this.logger?.error("Error: Retrieving of measurements for commit: " + commitHash +
+                    " for path: " + path + "\n\tMessage: " + error.message);
             }
         }
         const afterRetrieving = moment();
