@@ -44,7 +44,6 @@
     "bugfinder-localityrecorder-commitpath": "^1.9.0",
     "moment": "^2.29.1",
     "properties-reader": "^2.1.1",
-    "request": "^2.88.2",
     "ts-log": "^2.2.3"
   }
 }
