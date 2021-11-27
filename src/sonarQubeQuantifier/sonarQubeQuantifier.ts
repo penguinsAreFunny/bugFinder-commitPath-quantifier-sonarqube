@@ -124,11 +124,11 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         const estimatedTimeM = Math.round((estimatedTimeS/60)*100)/100;
         const estimatedTimeH = Math.round((estimatedTimeS/(60*60))*100)/100;
         const estimatedTimeD = Math.round((estimatedTimeS/(60*60*24))*100)/100;
-        this.logger?.info("\tPrehooks time:\t" +    preHooksTime);
-        this.logger?.info("\tCheckout time:\t" +    checkoutTime);
-        this.logger?.info("\tSonarQube time:\t" +   sonarQubeTime);
-        this.logger?.info("\tTotal time:\t" +       totalTime);
-        this.logger?.info("\tEstimated time for next " + (commits.length-i) + " commits: with " +
+        this.logger?.info("Prehooks time:\t\t" +    preHooksTime);
+        this.logger?.info("Checkout time:\t\t" +    checkoutTime);
+        this.logger?.info("SonarQube time:\t\t" +   sonarQubeTime);
+        this.logger?.info("Total time:\t\t" +       totalTime);
+        this.logger?.info("Estimated time for next " + (commits.length-i) + " commits: with " +
             totalTime + "s time per commit: " +  estimatedTimeS + "s = " + estimatedTimeM + "m = " +
             estimatedTimeH + "h  = " + estimatedTimeD + "d\n\n");
         // @formatter:on
@@ -169,10 +169,10 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
             // @formatter:off
             const args      = `-Dproject.settings=${this.sonarQubeConfig.propertiesPath}`;
             const command   = `sonar-scanner.bat ${args}`
-            this.logger?.info(command + "\n\n")
-            this.logger?.info("\tScanning might take a few minutes: Command: " + command);
+            this.logger?.info(command)
+            this.logger?.info("Scanning might take a few minutes: Command: " + command);
             execSync(command).toString();
-            this.logger?.info("\tFinished scan");
+            this.logger?.info("Finished scan");
             //@formatter:on
         };
 
@@ -199,7 +199,7 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
                 const newestTaskTime = Date.parse(newestTask.startedAt);
                 return newestTask.status == "SUCCESS" && newestTaskTime >= time;
             } catch (error) {
-                this.logger?.warn(`\tHttp GET to SonarQube-WebApi with path: "api/ce/activity" failed with error: 
+                this.logger?.warn(`Http GET to SonarQube-WebApi with path: "api/ce/activity" failed with error: 
                     ${error.statusCode}. Error message: ${error.message}. CommitHash: ${commitHash}`);
             }
         };
@@ -228,10 +228,10 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
 
             try {
                 const response = await axios(config);
-                this.logger?.info(`\tSuccessfully retrieved measurements for path: ${webPath}`);
+                this.logger?.info(`Successfully retrieved measurements for path: ${webPath}`);
                 return response.data;
             } catch (error) {
-                const msg = `"\tFailed to retrieve measurements from sonarQubeServer for path ${webPath}.` +
+                const msg = `"Failed to retrieve measurements from sonarQubeServer for path ${webPath}.` +
                     `Error message: ${error.message}`
                 throw new Error(msg);
             }
@@ -275,8 +275,8 @@ export class SonarQubeQuantifier implements Quantifier<CommitPath, SonarQubeMeas
         }
         const afterRetrieving = moment();
 
-        this.logger?.info("\tScanning time: " + afterScanning.diff(beforeScanning, "seconds"));
-        this.logger?.info("\tRetrieving time: " +  afterRetrieving.diff(beforeRetrieving, "seconds"));
+        this.logger?.info("Scanning time:\t\t" + afterScanning.diff(beforeScanning, "seconds"));
+        this.logger?.info("Retrieving time:\t" +  afterRetrieving.diff(beforeRetrieving, "seconds"));
 
         return measurements;
     }
